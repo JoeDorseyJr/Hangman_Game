@@ -2,6 +2,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -12,9 +13,9 @@ import java.util.Scanner;
 import java.util.Set;
 
 public class hangman_game {
-    public static Set<String> wordLetters = new HashSet<String>();
-    public static Set<String> correctLetters = new HashSet<String>();
-    public static Set<String> wrongLetters = new HashSet<String>();
+    public static Set<String> wordLetters = new HashSet<>();
+    public static Set<String> correctLetters = new HashSet<>();
+    public static Set<String> wrongLetters = new HashSet<>();
     public static Scanner userInput = new Scanner(System.in);
     public static final String ANSI_RED = "\u001B[31m";
     public static final String ANSI_GREEN = "\u001B[32m";
@@ -25,7 +26,7 @@ public class hangman_game {
 
     public static void main (String[] args) {
         boolean play;
-        boolean gameOver = false;
+        boolean gameOver;
 
         try {
             do {
@@ -38,7 +39,6 @@ public class hangman_game {
                 wrongLetters.clear();
                 correctLetters.clear();
                 wordLetters.clear();
-                gameOver = !play;
             } while (play);
 
         } catch (Exception e) {
@@ -60,7 +60,7 @@ public class hangman_game {
         }
         return ans.equalsIgnoreCase("y");
     }
-    public static String randWordApi() {
+    public static String randWordApi() throws IOException {
         String topNum = String.valueOf(randInt(1,1000));
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
