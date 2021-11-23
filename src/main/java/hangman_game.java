@@ -159,11 +159,10 @@ public class hangman_game {
         for (Character letter : letters) {
             if (correctLetters.contains(String.valueOf(letter))){
                 System.out.print(letter);
-                System.out.print(" ");
             } else {
                 System.out.print("_");
-                System.out.print(" ");
             }
+            System.out.print(" ");
         }
         System.out.println();
     }
