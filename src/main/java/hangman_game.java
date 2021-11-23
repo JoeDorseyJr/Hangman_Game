@@ -21,6 +21,7 @@ public class hangman_game {
     public static final String ANSI_GREEN = "\u001B[32m";
     public static final String ANSI_BOLD ="\u001B[1m";
     public static final String ANSI_RESET = "\u001B[0m";
+    public static final String ANSI_ITALIC_INTENSE_WHITE = "\u001B[3;97m";
     public static int oldSetSize = 0;
 
 
@@ -51,7 +52,7 @@ public class hangman_game {
         String ans ="";
         while (!ans.equalsIgnoreCase("y") && !ans.equalsIgnoreCase("n")) {
             try {
-                System.out.println("Would you like to play again? (Y or N)");
+                System.out.println(ANSI_ITALIC_INTENSE_WHITE+"Would you like to play again? "+ANSI_BOLD+"(Y or N)");
                 ans = userInput.next();
             } catch (Exception e){
                 System.err.println("Input Error");
@@ -108,7 +109,8 @@ public class hangman_game {
         }
         if (correctLetters.size() == wordLetters.size()){
             draw(word);
-            System.out.println(ANSI_BOLD+ANSI_GREEN+"You Win!"+ANSI_RESET);
+            System.out.print(ANSI_BOLD+ANSI_GREEN+"You Win! "+ANSI_RESET);
+            System.out.printf("The word is %s.\n",word);
         } else if (wrongLetters.size() == 6) {
             draw(word);
             System.out.println(ANSI_BOLD+ANSI_RED+"You Lose."+ANSI_RESET);
@@ -123,6 +125,7 @@ public class hangman_game {
         System.out.println();
     }
     public static void draw(String word){
+        System.out.println(ANSI_BOLD+ANSI_ITALIC_INTENSE_WHITE+"\nH A N G M A N"+ANSI_RESET);
         drawHangman(wrongLetters == null ? 0 : wrongLetters.size());
         drawBlanks(word);
         badGuesses();
