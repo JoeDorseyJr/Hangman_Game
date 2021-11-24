@@ -1,27 +1,14 @@
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-
-import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.time.Duration;
-import java.util.HashSet;
 import java.util.Scanner;
-import java.util.Set;
 
 public class hangman_game {
-    public static Set<String> wordLetters = new HashSet<>();
-    public static Set<String> correctLetters = new HashSet<>();
-    public static Set<String> wrongLetters = new HashSet<>();
     public static Scanner userInput = new Scanner(System.in);
     public static final String ANSI_RED = "\u001B[31m";
     public static final String ANSI_GREEN = "\u001B[32m";
     public static final String ANSI_BOLD ="\u001B[1m";
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_ITALIC_INTENSE_WHITE = "\u001B[3;97m";
+    public static GuessingLetters game = new GuessingLetters();
+    public static Draw drawing = new Draw();
     public static int oldSetSize = 0;
 
 
@@ -31,15 +18,14 @@ public class hangman_game {
 
         try {
             do {
-                String word = randWordApi().toUpperCase();
+                String word = RandomWords.getWord();
+                game.setWord(word);
                 do {
-                    draw(word);
-                    gameOver = guessLetter(word);
+                    drawHangman();
+                    gameOver = guessLetters();
                 } while(!gameOver);
                 play=playAgain();
-                wrongLetters.clear();
-                correctLetters.clear();
-                wordLetters.clear();
+                game.reset();
             } while (play);
 
         } catch (Exception e) {
@@ -61,116 +47,42 @@ public class hangman_game {
         }
         return ans.equalsIgnoreCase("y");
     }
-    public static String randWordApi() throws IOException {
-        String topNum = String.valueOf(randInt(1,1000));
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("https://most-common-words.herokuapp.com/api/search?top="+topNum))
-                .timeout(Duration.ofSeconds(10))
-                .build();
-        return client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                .thenApply(HttpResponse::body)
-                .thenApply((x) -> {
-                    try {
-                        return hangman_game.parseJSON(x);
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                    }
-                    return x;
-                })
-                .join();
-    }
-    public static String parseJSON (String responseBody) throws ParseException {
-            JSONParser parse = new JSONParser();
-            JSONObject words = (JSONObject) parse.parse(responseBody);
-        return words.get("word").toString();
-    }
-    public static boolean guessLetter(String word) {
-
+    public static boolean guessLetters() {
         try {
             System.out.println("Guess a Letter: ");
-            String guess = userInput.next().toUpperCase();
-            if (wrongLetters.contains(guess) || correctLetters.contains(guess)){
-                System.out.printf(ANSI_BOLD+"You've guessed '%s' already!\n"+ANSI_RESET,guess);
+            game.setGuess(userInput.next());
+            if (game.alreadyGuessed()){
+                System.out.printf(ANSI_BOLD+"You've guessed '%s' already!\n"+ANSI_RESET,game.getGuess());
             } else {
-                for (char letter : word.toCharArray()) {
-                    if (String.valueOf(letter).equalsIgnoreCase(guess)) {
-                        correctLetters.add(guess);
-                    } else {
-                        wrongLetters.add(guess);
-                    }
-                    wordLetters.add(Character.toString(letter));
-                }
-                wrongLetters.removeAll(correctLetters);
+                game.checkLetters();
             }
         } catch (Exception e) {
             e.printStackTrace();
             userInput.nextLine();
         }
-        if (correctLetters.size() == wordLetters.size()){
-            draw(word);
+        if (game.win()){
+            drawHangman();
             System.out.print(ANSI_BOLD+ANSI_GREEN+"You Win! "+ANSI_RESET);
-            System.out.printf("The word is %s.\n",word);
-        } else if (wrongLetters.size() == 6) {
-            draw(word);
+            System.out.printf("The word is %s.\n",game.getWord());
+        } else if (game.lose()) {
+            drawHangman();
             System.out.println(ANSI_BOLD+ANSI_RED+"You Lose."+ANSI_RESET);
         }
-        return correctLetters.size() == wordLetters.size() || wrongLetters.size() == 6;
+        return game.finished();
     }
-    public static void badGuesses(){
-        System.out.print("Wrong Guesses: ");
-        for (String letter : wrongLetters){
-            System.out.print(letter);
-        }
-        System.out.println();
-    }
-    public static void draw(String word){
+    public static void drawHangman(){
         System.out.println(ANSI_BOLD+ANSI_ITALIC_INTENSE_WHITE+"\nH A N G M A N"+ANSI_RESET);
-        drawHangman(wrongLetters == null ? 0 : wrongLetters.size());
-        drawBlanks(word);
-        badGuesses();
-    }
-    public static void drawHangman(int numWrongLetters){
         String strColor;
-        if (oldSetSize == wrongLetters.size()) {
+        if (oldSetSize == game.getWrongLetters().size()) {
             strColor = ANSI_RESET;
         } else {
             strColor = ANSI_RED;
-            oldSetSize = wrongLetters.size();
+            oldSetSize = game.getWrongLetters().size();
         }
-        String[][] hangmanStrArr= {
-                {" +----+", "      |", "      |", "      |", "      |", "      |", "    ====="},
-                {" +----+", strColor+" O "+ANSI_RESET+"   |", "      |", "      |", "      |", "      |", "    ====="},
-                {" +----+", " O    |", strColor+" | "+ANSI_RESET+"   |", strColor+" | "+ANSI_RESET+"   |", "      |", "      |", "    ====="},
-                {" +----+", " O    |", strColor+"\\"+ANSI_RESET+"|    |", " |    |", "      |", "      |", "    ====="},
-                {" +----+", " O    |", "\\|"+strColor+"/"+ANSI_RESET+"   |", " |    |", "      |", "      |", "    ====="},
-                {" +----+", " O    |", "\\|/   |", " |    |", strColor+"/"+ANSI_RESET+"     |", "      |", "    ====="},
-                {" +----+", strColor+" O "+ANSI_RESET+"   |", strColor+"\\|/"+ANSI_RESET+"   |", strColor+" |"+ANSI_RESET+"    |", strColor+"/ \\"+ANSI_RESET+"   |", "      |", "    ====="}
-        };
+        drawing.hangman(game.getWrongLetters().size(),strColor);
+        drawing.blanks(game.getWord(),game.getCorrectLetters(),game.getWrongLetters());
+    }
 
-        for (String message : hangmanStrArr[numWrongLetters]) {
-            System.out.println(message);
-        }
 
-    }
-    public static void drawBlanks(String word) {
-        System.out.print(" ");
-        char[] letters = word.toCharArray();
-        for (Character letter : letters) {
-            if (correctLetters.contains(String.valueOf(letter))){
-                System.out.print(letter);
-            } else {
-                System.out.print("_");
-            }
-            System.out.print(" ");
-        }
-        System.out.println();
-    }
-    public static int randInt(int start, int stop) {
-        if (start < 0 ) {
-            return (int) Math.round(Math.random() * (Math.abs(start - stop)) + start);
-        }
-        return (int) Math.round(Math.random() * stop + start);
-    }
 
 }
