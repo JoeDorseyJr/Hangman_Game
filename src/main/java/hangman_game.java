@@ -11,7 +11,6 @@ public class hangman_game {
     public static Draw drawing = new Draw();
     public static int oldSetSize = 0;
 
-
     public static void main (String[] args) {
         boolean play;
         boolean gameOver;
@@ -27,11 +26,9 @@ public class hangman_game {
                 play=playAgain();
                 game.reset();
             } while (play);
-
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
     public static boolean playAgain(){
@@ -47,6 +44,7 @@ public class hangman_game {
         }
         return ans.equalsIgnoreCase("y");
     }
+
     public static boolean guessLetters() {
         try {
             System.out.println("Guess a Letter: ");
@@ -70,6 +68,7 @@ public class hangman_game {
         }
         return game.finished();
     }
+
     public static void drawHangman(){
         System.out.println(ANSI_BOLD+ANSI_ITALIC_INTENSE_WHITE+"\nH A N G M A N"+ANSI_RESET);
         String strColor;
@@ -82,7 +81,5 @@ public class hangman_game {
         drawing.hangman(game.getWrongLetters().size(),strColor);
         drawing.blanks(game.getWord(),game.getCorrectLetters(),game.getWrongLetters());
     }
-
-
 
 }

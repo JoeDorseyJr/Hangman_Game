@@ -1,17 +1,7 @@
 import java.util.Set;
 
-
-
-
-
-
 public class Draw {
-    public static final String ANSI_RED = "\u001B[31m";
-    public static final String ANSI_GREEN = "\u001B[32m";
-    public static final String ANSI_BOLD = "\u001B[1m";
     public static final String ANSI_RESET = "\u001B[0m";
-    public static final String ANSI_ITALIC_INTENSE_WHITE = "\u001B[3;97m";
-    public static int oldSetSize = 0;
     public void hangman(int numberOfWrongLetters,String strColor){
 
         String[][] hangmanStrArr= {
